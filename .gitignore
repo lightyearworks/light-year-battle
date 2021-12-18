@@ -3,6 +3,7 @@
 .idea
 node_modules
 build
+temp
 
 #Files
 package-lock.json
