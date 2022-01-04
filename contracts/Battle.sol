@@ -172,9 +172,9 @@ contract Battle is IBattle {
         }
 
         //winner
-        uint8 winner = 1;
+        uint8 winner = 0;
         if (_checkShipsAllHealth(attackerShips_) >= _checkShipsAllHealth(defenderShips_)) {
-            winner = 0;
+            winner = 1;
         }
         result = abi.encodePacked(winner, result);
 
