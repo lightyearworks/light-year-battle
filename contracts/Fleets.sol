@@ -204,6 +204,17 @@ contract Fleets is FleetsModel, IFleets, Ownable {
         emit userFleetsInformation(_msgSender(), coordinate, attackArray);
     }
 
+    function fleetShipInfo(address user_, uint256 index_) public view returns (IShip.Info[] memory){
+        Fleet memory fleet = userFleet(user_, index_);
+        uint256 length = fleet.shipIdArray.length;
+        IShip.Info[] memory ships = new IShip.Info[](length);
+        for (uint i = 0; i < length; i++) {
+            uint256 shipId = fleet.shipIdArray[i];
+            ships[i] = ship().shipInfo(shipId);
+        }
+        return ships;
+    }
+
     function _checkFleetStatus(address addr_, uint256 fleetIndex_, FleetStatus status_) private view returns (bool){
         Fleet memory fleet = userFleet(addr_, fleetIndex_);
         return fleet.status == status_;

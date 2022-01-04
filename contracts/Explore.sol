@@ -9,6 +9,7 @@ import "./interface/IAccount.sol";
 import "./interface/IBattle.sol";
 import "./interface/IShip.sol";
 import "./interface/IExploreConfig.sol";
+import "./interface/ICommodityERC20.sol";
 
 contract Explore is Ownable {
 
@@ -44,22 +45,30 @@ contract Explore is Ownable {
         return IExploreConfig(registry().exploreConfig());
     }
 
-    function _handleExploreResult(uint8 win_, uint256 nowLevel_, uint256 level_, bytes memory battleBytes_) private {
-        if (win_ == 1) {
-            emit ExploreResult(1, new uint256[](0), 0, battleBytes_);
+    function _handleExploreResult(uint256 index_, uint8 win_, uint256 userMaxLevel_, uint256 level_, bytes memory battleBytes_) private {
+
+        //explore lose
+        if (win_ == 0) {
+            emit ExploreResult(0, new uint256[](0), 0, battleBytes_);
             return;
         }
 
-        if (nowLevel_ == level_) {
+        //add user explore level
+        if (userMaxLevel_ == level_) {
             account().addExploreLevel(_msgSender());
+            userMaxLevel_++;
         }
 
-        uint256[] memory winResource = exploreConfig().getRealDropByLevel(level_);
-        nowLevel_ = account().userExploreLevel(_msgSender());
-        emit ExploreResult(2, winResource, nowLevel_, battleBytes_);
+        //win and get real drop
+        uint256[] memory heroIdArray = fleets().userFleet(_msgSender(), index_).heroIdArray;
+        uint256[] memory winResource = exploreConfig().getRealDropByLevel(level_, heroIdArray);
+        _exploreDrop(winResource);
+        emit ExploreResult(1, winResource, userMaxLevel_, battleBytes_);
     }
 
     function fleetBattleExplore(uint256 index_, uint256 level_) public {
+
+        //get ship info array from fleet
         IFleets.Fleet memory fleet = fleets().userFleet(_msgSender(), index_);
         uint256 attackerLen = fleet.shipIdArray.length;
         IShip.Info[] memory attackerShips = new IShip.Info[](attackerLen);
@@ -67,14 +76,23 @@ contract Explore is Ownable {
             attackerShips[i] = ship().shipInfo(fleet.shipIdArray[i]);
         }
 
+        //get pirate ships
         IShip.Info[] memory defenderShips = exploreConfig().pirateShips(level_);
 
         //battle
         bytes memory battleBytes = battle().battleByShipInfo(attackerShips, defenderShips);
         uint8 win = uint8(battleBytes[0]);
 
-        uint256 nowLevel = account().userExploreLevel(_msgSender());
-        _handleExploreResult(win, nowLevel, level_, battleBytes);
+        //handle explore result
+        uint256 userMaxLevel = account().userExploreLevel(_msgSender());
+        _handleExploreResult(index_, win, userMaxLevel, level_, battleBytes);
+    }
+
+    function _exploreDrop(uint256[] memory winResource_) private {
+        ICommodityERC20(registry().tokenIron()).mint(_msgSender(), winResource_[0]);
+        ICommodityERC20(registry().tokenGold()).mint(_msgSender(), winResource_[1]);
+        ICommodityERC20(registry().tokenSilicate()).mint(_msgSender(), winResource_[2]);
+        ICommodityERC20(registry().tokenEnergy()).mint(_msgSender(), winResource_[3]);
     }
 
     uint256 private nonce;
