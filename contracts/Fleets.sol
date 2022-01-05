@@ -14,6 +14,7 @@ import "./interface/IRegistry.sol";
 import "./interface/IShip.sol";
 import "./interface/IAccount.sol";
 import "./interface/IHero.sol";
+import "./interface/ICommodityERC20.sol";
 
 contract Fleets is FleetsModel, IFleets, Ownable {
     using ArrayUtils for ArrayUtils;
@@ -288,6 +289,9 @@ contract Fleets is FleetsModel, IFleets, Ownable {
     }
 
     function quickFly(uint256 index_) public {
+        (address tokenAddress,uint256 cost) = fleetsConfig().getQuickFlyCost();
+        ICommodityERC20(tokenAddress).operatorTransfer(_msgSender(), address(this), cost);
+        ICommodityERC20(tokenAddress).burn(cost);
         Fleet storage fleet = userFleetsMap[_msgSender()][index_];
         fleet.missionEndTime = fleet.missionStartTime;
     }
