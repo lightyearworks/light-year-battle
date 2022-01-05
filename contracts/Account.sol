@@ -29,6 +29,10 @@ contract Account is AccountModel, IAccount, Ownable {
         return userExploreLevelMap[addr_];
     }
 
+    function userExploreTime(address addr_) external override view returns (uint256){
+        return userExploreTimeMap[addr_];
+    }
+
     function addUser(address addr_) public override onlyOperator {
         require(userAddressMap[addr_] == 0, "addUser: user already exists.");
         uint32 userId = totalUsers + 1;

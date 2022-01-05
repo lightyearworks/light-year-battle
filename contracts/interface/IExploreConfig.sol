@@ -11,4 +11,6 @@ interface IExploreConfig {
     function getRealDropByLevel(uint256 level_, uint256[] memory heroIdArray) external view returns (uint256[] memory);
 
     function pirateShips(uint256 level_) external pure returns (IShip.Info[] memory);
+
+    function exploreDuration() external pure returns(uint256);
 }

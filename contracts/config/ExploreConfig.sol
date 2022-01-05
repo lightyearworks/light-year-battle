@@ -76,6 +76,10 @@ contract ExploreConfig is IExploreConfig {
         return drop_;
     }
 
+    function exploreDuration() public override pure returns(uint256){
+        return 6 hours;
+    }
+
     function _random(uint256 seed_, uint256 randomSize_) private view returns (uint256){
         uint256 difficulty = block.difficulty;
         uint256 gaslimit = block.gaslimit;

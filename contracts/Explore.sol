@@ -68,6 +68,9 @@ contract Explore is Ownable {
 
     function fleetBattleExplore(uint256 index_, uint256 level_) public {
 
+        //check user explore time
+        require(now >= account().userExploreTime(_msgSender()) + exploreConfig().exploreDuration(), "Explore not ready.");
+
         //get ship info array from fleet
         IFleets.Fleet memory fleet = fleets().userFleet(_msgSender(), index_);
         uint256 attackerLen = fleet.shipIdArray.length;
@@ -86,6 +89,9 @@ contract Explore is Ownable {
         //handle explore result
         uint256 userMaxLevel = account().userExploreLevel(_msgSender());
         _handleExploreResult(index_, win, userMaxLevel, level_, battleBytes);
+
+        //user explore time
+        account().setUserExploreTime(_msgSender(), now);
     }
 
     function _exploreDrop(uint256[] memory winResource_) private {

@@ -18,4 +18,6 @@ interface IAccount {
     function saveBattleHistory(address addr_, bytes memory history_) external;
 
     function setUserExploreTime(address addr_, uint256 time_) external;
+
+    function userExploreTime(address addr_) external view returns(uint256);
 }
