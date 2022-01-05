@@ -38,17 +38,17 @@ contract ExploreConfig is IExploreConfig {
 
     function getRealDropByLevel(uint256 level_, uint256[] memory heroIdArray_) public override view returns (uint256[] memory){
         uint256[] memory mayDrop = getMayDropByLevel(level_);
-        uint256[] memory realDrop = new uint256[](4);
-        realDrop[0] = mayDrop[0] + _random(0, 100);
-        realDrop[1] = mayDrop[1] + _random(1, 100);
-        realDrop[2] = mayDrop[2] + _random(2, 100);
-        realDrop[3] = mayDrop[3] + _random(3, 100);
+        uint256[] memory realDrop = new uint256[](8);
+        realDrop[4] = (mayDrop[0] + _random(0, 100)) * 1e18;
+        realDrop[5] = (mayDrop[1] + _random(1, 100)) * 1e18;
+        realDrop[6] = (mayDrop[2] + _random(2, 100)) * 1e18;
+        realDrop[7] = (mayDrop[3] + _random(3, 100)) * 1e18;
 
         //drop reward by hero luck
-        realDrop[0] = heroLuckReward(realDrop[0], heroIdArray_) * 1e18;
-        realDrop[1] = heroLuckReward(realDrop[1], heroIdArray_) * 1e18;
-        realDrop[2] = heroLuckReward(realDrop[2], heroIdArray_) * 1e18;
-        realDrop[3] = heroLuckReward(realDrop[3], heroIdArray_) * 1e18;
+        realDrop[0] = heroLuckReward(realDrop[4], heroIdArray_);
+        realDrop[1] = heroLuckReward(realDrop[5], heroIdArray_);
+        realDrop[2] = heroLuckReward(realDrop[6], heroIdArray_);
+        realDrop[3] = heroLuckReward(realDrop[7], heroIdArray_);
 
         return realDrop;
     }
