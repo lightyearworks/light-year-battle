@@ -44,4 +44,8 @@ contract Account is AccountModel, IAccount, Ownable {
     function saveBattleHistory(address addr_, bytes memory history_) external override onlyOperator {
         userBattleHistoryMap[addr_].push(history_);
     }
+
+    function setUserExploreTime(address addr_, uint256 time_) external override onlyOperator{
+        userExploreTimeMap[addr_] = time_;
+    }
 }

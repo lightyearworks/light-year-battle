@@ -16,4 +16,6 @@ interface IAccount {
     function addExploreLevel(address addr_) external;
     
     function saveBattleHistory(address addr_, bytes memory history_) external;
+
+    function setUserExploreTime(address addr_, uint256 time_) external;
 }
