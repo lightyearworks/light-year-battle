@@ -17,11 +17,9 @@ contract BattleConfig is IBattleConfig {
         return IRegistry(registryAddress);
     }
 
-    function shipHealth(IShip.Info memory ship_) external override view returns (uint16){
-        return ship_.quality * 2;
-    }
-
-    function getRealDamage(IBattle.BattleShip memory attacker_, IBattle.BattleShip memory defender_) external override pure returns (uint256){
-        return 50;
+    function getRealDamage(IBattle.BattleShip memory attacker_, IBattle.BattleShip memory defender_) external override pure returns (uint32){
+        uint32 attack = attacker_.attack;
+        uint32 defense = defender_.defense;
+        return (attack * attack) / (attack + defense);
     }
 }

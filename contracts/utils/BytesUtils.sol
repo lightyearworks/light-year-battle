@@ -6,7 +6,7 @@ library BytesUtils {
     /**
      *
      */
-    function _addBytes(bytes memory b, uint16 i) public pure returns (bytes memory){
+    function _addBytes(bytes memory b, uint32 i) public pure returns (bytes memory){
         return _mergeBytes(b, abi.encodePacked(i));
     }
 

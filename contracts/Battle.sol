@@ -10,8 +10,8 @@ import "./interface/IRegistry.sol";
 import "./interface/IFleets.sol";
 import "./interface/IFleetsConfig.sol";
 import "./interface/IShip.sol";
-import "./interface/IShipConfig.sol";
 import "./interface/IBattleConfig.sol";
+import "./interface/IShipAttrConfig.sol";
 
 contract Battle is IBattle {
     using BytesUtils for BytesUtils;
@@ -36,10 +36,6 @@ contract Battle is IBattle {
         return IFleetsConfig(registry().fleetsConfig());
     }
 
-    function shipConfig() private view returns (IShipConfig){
-        return IShipConfig(registry().shipConfig());
-    }
-
     function account() private view returns (IAccount){
         return IAccount(registry().account());
     }
@@ -50,6 +46,10 @@ contract Battle is IBattle {
 
     function battleConfig() private view returns (IBattleConfig){
         return IBattleConfig(registry().battleConfig());
+    }
+
+    function shipAttrConfig() private view returns (IShipAttrConfig){
+        return IShipAttrConfig(registry().shipAttrConfig());
     }
 
     /**
@@ -103,7 +103,7 @@ contract Battle is IBattle {
         return battleByShipInfo(attackerShips, defenderShips);
     }
 
-    function battleByShipInfo(IShip.Info[] memory attackerShips_, IShip.Info[] memory defenderShips_) public override view returns (bytes memory){
+    function battleByShipInfo(IShip.Info[] memory attackerShips_, IShip.Info[] memory defenderShips_) public view returns (bytes memory){
         BattleShip[] memory attacker = _toBattleShipArray(attackerShips_);
         BattleShip[] memory defender = _toBattleShipArray(defenderShips_);
         return battleByBattleShip(attacker, defender);
@@ -189,8 +189,8 @@ contract Battle is IBattle {
         return result;
     }
 
-    function _checkShipsAllHealth(BattleShip[] memory ships_) private pure returns (uint16){
-        uint16 health = 0;
+    function _checkShipsAllHealth(BattleShip[] memory ships_) private pure returns (uint32){
+        uint32 health = 0;
         for (uint i = 0; i < ships_.length; i++) {
             health += ships_[i].health;
         }
@@ -214,8 +214,7 @@ contract Battle is IBattle {
         BattleShip memory defenderShip = defender_[toIndex];
 
         //cause damage
-        uint256 damage = battleConfig().getRealDamage(attackerShip, defenderShip);
-        uint16 delta = uint16(damage);
+        uint32 delta = battleConfig().getRealDamage(attackerShip, defenderShip);
 
         if (defenderShip.health < delta) {
             defenderShip.health = 0;
@@ -233,8 +232,11 @@ contract Battle is IBattle {
     function _toBattleShipArray(IShip.Info[] memory array) private view returns (BattleShip[] memory){
         BattleShip[] memory ships = new BattleShip[](array.length);
         for (uint i = 0; i < ships.length; i++) {
-            uint16 health = battleConfig().shipHealth(array[i]);
-            BattleShip memory battleShip = BattleShip(health);
+            uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(array[i]);
+            uint32 health = uint32(attrs[5]);
+            uint32 attack = uint32(attrs[6]);
+            uint32 defense = uint32(attrs[7]);
+            BattleShip memory battleShip = BattleShip(health, attack, defense);
             ships[i] = battleShip;
         }
         return ships;
@@ -242,7 +244,7 @@ contract Battle is IBattle {
 
     function _basicBattleShip() private pure returns (BattleShip[] memory){
         BattleShip[] memory ships = new BattleShip[](1);
-        ships[0] = BattleShip(1);
+        ships[0] = BattleShip(10, 10, 10);
         return ships;
     }
 

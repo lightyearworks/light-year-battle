@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma experimental ABIEncoderV2;
 pragma solidity ^0.6.12;
-
-import "./IShip.sol";
 
 interface IBattle {
 
     struct BattleShip {
-        uint16 health;
+        uint32 health;
+        uint32 attack;
+        uint32 defense;
     }
 
     struct BattleInfo {
@@ -19,5 +18,4 @@ interface IBattle {
         uint32 delta;
     }
 
-    function battleByShipInfo(IShip.Info[] memory attackerShips_, IShip.Info[] memory defenderShips_) external view returns (bytes memory);
 }

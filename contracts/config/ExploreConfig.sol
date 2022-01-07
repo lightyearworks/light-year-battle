@@ -76,7 +76,7 @@ contract ExploreConfig is IExploreConfig {
         return drop_;
     }
 
-    function exploreDuration() public override pure returns(uint256){
+    function exploreDuration() public override pure returns (uint256){
         return 6 hours;
     }
 
