@@ -11,6 +11,7 @@ import "./interface/IFleets.sol";
 import "./interface/IFleetsConfig.sol";
 import "./interface/IShip.sol";
 import "./interface/IShipConfig.sol";
+import "./interface/IBattleConfig.sol";
 
 contract Battle is IBattle {
     using BytesUtils for BytesUtils;
@@ -47,21 +48,25 @@ contract Battle is IBattle {
         return IShip(registry().ship());
     }
 
+    function battleConfig() private view returns (IBattleConfig){
+        return IBattleConfig(registry().battleConfig());
+    }
+
     /**
      * battle
      */
-    function battle(uint256 fleetIndex) external {
+    function battle(uint256 fleetIndex_) external {
 
         //require fleet status
-        IFleets.Fleet memory attackerFleet = fleets().userFleet(msg.sender, fleetIndex);
+        IFleets.Fleet memory attackerFleet = fleets().userFleet(msg.sender, fleetIndex_);
         require(attackerFleet.status == IFleets.FleetStatus.GoBattle, "battle: The fleet has not prepared for battle.");
-        require(block.timestamp >= attackerFleet.missionEndTime, "battle: The fleet has not arrived yet.");
+        require(now >= attackerFleet.missionEndTime, "battle: The fleet has not arrived yet.");
 
         //check defender fleet
         IFleets.Fleet memory defenderFleet = fleets().getGuardFleet(attackerFleet.target);
 
         //battle
-        bytes memory battleBytes = _battle(attackerFleet, defenderFleet);
+        bytes memory battleBytes = battleByFleet(attackerFleet, defenderFleet);
         account().saveBattleHistory(msg.sender, battleBytes);
 
         //handle battle result
@@ -72,9 +77,9 @@ contract Battle is IBattle {
     }
 
     /**
-     * private battle
+     * battle by fleet 
      */
-    function _battle(IFleets.Fleet memory attacker, IFleets.Fleet memory defender) private view returns (bytes memory){
+    function battleByFleet(IFleets.Fleet memory attacker, IFleets.Fleet memory defender) public view returns (bytes memory){
 
         //ship length
         uint256 attackerLen = attacker.shipIdArray.length;
@@ -99,21 +104,24 @@ contract Battle is IBattle {
     }
 
     function battleByShipInfo(IShip.Info[] memory attackerShips_, IShip.Info[] memory defenderShips_) public override view returns (bytes memory){
+        BattleShip[] memory attacker = _toBattleShipArray(attackerShips_);
+        BattleShip[] memory defender = _toBattleShipArray(defenderShips_);
+        return battleByBattleShip(attacker, defender);
+    }
 
+    function battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) public view returns (bytes memory){
         //ship length
         uint256 attackerLen = attackerShips_.length;
         uint256 defenderLen = defenderShips_.length;
 
         //empty attacker
         if (attackerLen == 0) {
-            attackerShips_ = new IShip.Info[](1);
-            attackerShips_[0] = IShip.Info(0, 0, 0, 0);
+            attackerShips_ = _basicBattleShip();
         }
 
         //empty defender
         if (defenderLen == 0) {
-            defenderShips_ = new IShip.Info[](1);
-            defenderShips_[0] = IShip.Info(0, 0, 0, 0);
+            defenderShips_ = _basicBattleShip();
         }
 
         //bytes
@@ -122,7 +130,7 @@ contract Battle is IBattle {
         //attack health
         for (uint i = 0; i < fleetsConfig().getFleetShipLimit(); i++) {
             if (i < attackerLen) {
-                IShip.Info memory attackerShip = attackerShips_[i];
+                BattleShip memory attackerShip = attackerShips_[i];
                 result = BytesUtils._addBytes(result, attackerShip.health);
             } else {
                 result = BytesUtils._addBytes(result, 0);
@@ -132,7 +140,7 @@ contract Battle is IBattle {
         //defender health
         for (uint i = 0; i < fleetsConfig().getFleetShipLimit(); i++) {
             if (i < defenderLen) {
-                IShip.Info memory defenderShip = defenderShips_[i];
+                BattleShip memory defenderShip = defenderShips_[i];
                 result = BytesUtils._addBytes(result, defenderShip.health);
             } else {
                 result = BytesUtils._addBytes(result, 0);
@@ -181,11 +189,10 @@ contract Battle is IBattle {
         return result;
     }
 
-    function _checkShipsAllHealth(IShip.Info[] memory ships_) private pure returns (uint16){
+    function _checkShipsAllHealth(BattleShip[] memory ships_) private pure returns (uint16){
         uint16 health = 0;
         for (uint i = 0; i < ships_.length; i++) {
-            IShip.Info memory shipInfo = ships_[i];
-            health += shipInfo.health;
+            health += ships_[i].health;
         }
         return health;
     }
@@ -193,7 +200,7 @@ contract Battle is IBattle {
     /**
      *
      */
-    function _singleRound(uint8 battleType, IShip.Info[] memory attacker_, IShip.Info[] memory defender_) private view returns (bytes memory, IShip.Info[] memory){
+    function _singleRound(uint8 battleType, BattleShip[] memory attacker_, BattleShip[] memory defender_) private view returns (bytes memory, BattleShip[] memory){
 
         //from index and to index
         uint8 fromIndex = uint8(_getFirstShipIndex(attacker_));
@@ -203,11 +210,11 @@ contract Battle is IBattle {
         uint8 attributeIndex = 6;
 
         //attacker ship and defender ship
-        IShip.Info memory attackerShip = attacker_[fromIndex];
-        IShip.Info memory defenderShip = defender_[toIndex];
+        BattleShip memory attackerShip = attacker_[fromIndex];
+        BattleShip memory defenderShip = defender_[toIndex];
 
         //cause damage
-        uint256 damage = shipConfig().getRealDamageByInfo(attackerShip, defenderShip);
+        uint256 damage = battleConfig().getRealDamage(attackerShip, defenderShip);
         uint16 delta = uint16(damage);
 
         if (defenderShip.health < delta) {
@@ -223,15 +230,29 @@ contract Battle is IBattle {
         return (_battleInfoToBytes(info), defender_);
     }
 
-    function _getFirstShipIndex(IShip.Info[] memory ships_) private pure returns (uint256){
-        uint256 index = 0;
+    function _toBattleShipArray(IShip.Info[] memory array) private view returns (BattleShip[] memory){
+        BattleShip[] memory ships = new BattleShip[](array.length);
+        for (uint i = 0; i < ships.length; i++) {
+            uint16 health = battleConfig().shipHealth(array[i]);
+            BattleShip memory battleShip = BattleShip(health);
+            ships[i] = battleShip;
+        }
+        return ships;
+    }
+
+    function _basicBattleShip() private pure returns (BattleShip[] memory){
+        BattleShip[] memory ships = new BattleShip[](1);
+        ships[0] = BattleShip(1);
+        return ships;
+    }
+
+    function _getFirstShipIndex(BattleShip[] memory ships_) private pure returns (uint256){
         for (uint i = 0; i < ships_.length; i++) {
-            IShip.Info memory shipInfo = ships_[i];
-            if (shipInfo.health > 0) {
-                index = i;
+            if (ships_[i].health > 0) {
+                return i;
             }
         }
-        return index;
+        return 0;
     }
 
     /**
@@ -258,26 +279,14 @@ contract Battle is IBattle {
         return result;
     }
 
-    function _random(uint256 randomSize) private view returns (uint256){
+    function _random(uint256 seed_, uint256 randomSize_) private view returns (uint256){
         uint256 difficulty = block.difficulty;
         uint256 gaslimit = block.gaslimit;
         uint256 number = block.number;
         uint256 timestamp = block.timestamp;
         uint256 gasprice = tx.gasprice;
-        uint256 random = uint256(keccak256(abi.encodePacked(difficulty, gaslimit, number, timestamp, gasprice))) % randomSize;
+        uint256 random = uint256(keccak256(abi.encodePacked(seed_, difficulty, gaslimit, number, timestamp, gasprice))) % randomSize_;
         return random;
     }
 
-    // function _random(uint256 randomSize) private returns (uint256){
-    //     nonce++;
-    //     uint256 difficulty = block.difficulty;
-    //     uint256 gaslimit = block.gaslimit;
-    //     uint256 number = block.number;
-    //     uint256 timestamp = block.timestamp;
-    //     uint256 gasprice = tx.gasprice;
-    //     uint256 random = uint256(keccak256(abi.encodePacked(nonce, difficulty, gaslimit, number, timestamp, gasprice))) % randomSize;
-    //     return random;
-    // }
-
-    // uint256 nonce;
 }

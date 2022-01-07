@@ -6,6 +6,10 @@ import "./IShip.sol";
 
 interface IBattle {
 
+    struct BattleShip {
+        uint16 health;
+    }
+
     struct BattleInfo {
         bytes1 direction;
         uint8 battleType;

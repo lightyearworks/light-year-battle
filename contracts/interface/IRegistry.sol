@@ -31,6 +31,8 @@ interface IRegistry {
 
     function exploreConfig() external view returns (address);
 
+    function battleConfig() external view returns (address);
+
 
     function baseConfig() external view returns (address);
 
