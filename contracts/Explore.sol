@@ -79,11 +79,14 @@ contract Explore is Ownable {
             attackerShips[i] = ship().shipInfo(fleet.shipIdArray[i]);
         }
 
+        //to battle ships
+        IBattle.BattleShip[] memory attacker = battle().toBattleShipArray(attackerShips);
+
         //get pirate ships
-        IShip.Info[] memory defenderShips = exploreConfig().pirateShips(level_);
+        IBattle.BattleShip[] memory defender = exploreConfig().pirateBattleShips(level_);
 
         //battle
-        bytes memory battleBytes = battle().battleByShipInfo(attackerShips, defenderShips);
+        bytes memory battleBytes = battle().battleByBattleShip(attacker, defender);
         uint8 win = uint8(battleBytes[0]);
 
         //handle explore result

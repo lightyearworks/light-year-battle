@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
+pragma experimental ABIEncoderV2;
 pragma solidity ^0.6.12;
+
+import "./IShip.sol";
 
 interface IBattle {
 
@@ -18,4 +21,7 @@ interface IBattle {
         uint32 delta;
     }
 
+    function toBattleShipArray(IShip.Info[] memory array) external view returns (BattleShip[] memory);
+    function battleByShipInfo(IShip.Info[] memory attackerShips_, IShip.Info[] memory defenderShips_) external view returns (bytes memory);
+    function battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) external view returns (bytes memory);
 }

@@ -9,7 +9,6 @@ import "./interface/IAccount.sol";
 import "./interface/IRegistry.sol";
 import "./interface/IFleets.sol";
 import "./interface/IFleetsConfig.sol";
-import "./interface/IShip.sol";
 import "./interface/IBattleConfig.sol";
 import "./interface/IShipAttrConfig.sol";
 
@@ -103,13 +102,13 @@ contract Battle is IBattle {
         return battleByShipInfo(attackerShips, defenderShips);
     }
 
-    function battleByShipInfo(IShip.Info[] memory attackerShips_, IShip.Info[] memory defenderShips_) public view returns (bytes memory){
-        BattleShip[] memory attacker = _toBattleShipArray(attackerShips_);
-        BattleShip[] memory defender = _toBattleShipArray(defenderShips_);
+    function battleByShipInfo(IShip.Info[] memory attackerShips_, IShip.Info[] memory defenderShips_) public override view returns (bytes memory){
+        BattleShip[] memory attacker = toBattleShipArray(attackerShips_);
+        BattleShip[] memory defender = toBattleShipArray(defenderShips_);
         return battleByBattleShip(attacker, defender);
     }
 
-    function battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) public view returns (bytes memory){
+    function battleByBattleShip(BattleShip[] memory attackerShips_, BattleShip[] memory defenderShips_) public override view returns (bytes memory){
         //ship length
         uint256 attackerLen = attackerShips_.length;
         uint256 defenderLen = defenderShips_.length;
@@ -229,7 +228,7 @@ contract Battle is IBattle {
         return (_battleInfoToBytes(info), defender_);
     }
 
-    function _toBattleShipArray(IShip.Info[] memory array) private view returns (BattleShip[] memory){
+    function toBattleShipArray(IShip.Info[] memory array) public override view returns (BattleShip[] memory){
         BattleShip[] memory ships = new BattleShip[](array.length);
         for (uint i = 0; i < ships.length; i++) {
             uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(array[i]);

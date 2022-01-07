@@ -5,5 +5,6 @@ pragma solidity ^0.6.12;
 import "./IHero.sol";
 
 interface IHeroAttrConfig {
-    function getAttributes(uint256 heroId_) external view returns (uint256[] memory);
+    function getAttributesById(uint256 HeroId_) external view returns (uint256[] memory);
+    function getAttributesByInfo(IHero.Info memory info_) external view returns (uint256[] memory);
 }

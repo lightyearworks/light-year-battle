@@ -6,7 +6,7 @@ import "../interface/IFleetsConfig.sol";
 import "../interface/IRegistry.sol";
 import "../interface/IFleets.sol";
 import "../interface/IShip.sol";
-import "../interface/IShipConfig.sol";
+import "../interface/IShipAttrConfig.sol";
 
 contract FleetsConfig is IFleetsConfig {
 
@@ -28,8 +28,8 @@ contract FleetsConfig is IFleetsConfig {
         return IShip(registry().ship());
     }
 
-    function shipConfig() private view returns (IShipConfig){
-        return IShipConfig(registry().shipConfig());
+    function shipAttrConfig() private view returns (IShipAttrConfig){
+        return IShipAttrConfig(registry().shipAttrConfig());
     }
 
     mapping(uint256 => uint256[]) private configMap;
@@ -74,7 +74,7 @@ contract FleetsConfig is IFleetsConfig {
     function checkFleetFormationConfig(uint256[] memory shipIdArray_) public override view returns (bool){
         uint256[] memory count = new uint256[](4);
         for (uint i = 0; i < shipIdArray_.length; i++) {
-            uint256 category = shipConfig().getShipCategoryById(shipIdArray_[i]);
+            uint256 category = shipAttrConfig().getShipCategory(ship().shipInfo(shipIdArray_[i]).shipType);
             count[category]++;
         }
 
@@ -92,7 +92,7 @@ contract FleetsConfig is IFleetsConfig {
         uint256[] memory shipIdArray = fleet.shipIdArray;
         uint256 totalAttack = 0;
         for (uint i = 0; i < shipIdArray.length; i++) {
-            uint256 attack = shipConfig().getShipAttackById(shipIdArray[i]);
+            uint256 attack = shipAttrConfig().getAttributesById(shipIdArray[i])[5];
             totalAttack += attack;
         }
         return totalAttack;

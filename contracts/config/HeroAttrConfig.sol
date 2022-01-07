@@ -22,8 +22,12 @@ contract HeroAttrConfig is IHeroAttrConfig {
         return IHero(registry().hero());
     }
 
-    function getAttributes(uint256 heroId_) public view override returns (uint256[] memory){
-        IHero.Info memory heroInfo = hero().heroInfo(heroId_);
+    function getAttributesById(uint256 HeroId_) public view override returns (uint256[] memory){
+        IHero.Info memory info = hero().heroInfo(HeroId_);
+        return getAttributesByInfo(info);
+    }
+
+    function getAttributesByInfo(IHero.Info memory info_) public view override returns (uint256[] memory){
         uint16 level = info_.level;
         uint8 quality = info_.quality;
         uint8 heroType = info_.heroType;

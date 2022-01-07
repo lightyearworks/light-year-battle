@@ -4,7 +4,7 @@ pragma solidity ^0.6.12;
 
 import "../interface/IExploreConfig.sol";
 import "../interface/IRegistry.sol";
-import "../interface/IHeroConfig.sol";
+import "../interface/IHeroAttrConfig.sol";
 
 contract ExploreConfig is IExploreConfig {
 
@@ -18,8 +18,8 @@ contract ExploreConfig is IExploreConfig {
         return IRegistry(registryAddress);
     }
 
-    function heroConfig() private view returns (IHeroConfig){
-        return IHeroConfig(registry().heroConfig());
+    function heroAttrConfig() private view returns (IHeroAttrConfig){
+        return IHeroAttrConfig(registry().heroConfig());
     }
 
     function getMayDropByLevel(uint256 level_) public override pure returns (uint256[] memory){
@@ -53,11 +53,12 @@ contract ExploreConfig is IExploreConfig {
         return realDrop;
     }
 
-    function pirateShips(uint256 level_) public override pure returns (IShip.Info[] memory){
-        IShip.Info[] memory ships = new IShip.Info[](4);
-        uint16 quality = uint16(level_ + 1) * 2;
-        uint16 health = 100 + quality;
-        IShip.Info memory info = IShip.Info(health, quality, 1, 1);
+    function pirateBattleShips(uint256 level_) public override pure returns (IBattle.BattleShip[] memory){
+        IBattle.BattleShip[] memory ships = new IBattle.BattleShip[](4);
+        uint32 health = 30 * uint32(level_ + 1);
+        uint32 attack = 30 * uint32(level_ + 1);
+        uint32 defense = 30 * uint32(level_ + 1);
+        IBattle.BattleShip memory info = IBattle.BattleShip(health, attack, defense);
         ships[0] = info;
         ships[1] = info;
         ships[2] = info;
@@ -69,7 +70,7 @@ contract ExploreConfig is IExploreConfig {
         for (uint i = 0; i < heroIdArray_.length; i++) {
             uint256 heroId = heroIdArray_[i];
             if (heroId != 0) {
-                uint256 luck = heroConfig().getAttributesById(heroId)[6];
+                uint256 luck = heroAttrConfig().getAttributesById(heroId)[6];
                 drop_ = drop_ * (100 + luck) / 100;
             }
         }

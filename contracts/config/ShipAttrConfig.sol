@@ -48,7 +48,7 @@ contract ShipAttrConfig is IShipAttrConfig {
         return attrs;
     }
 
-    function getShipCategory(uint8 shipType_) public pure returns (uint256){
+    function getShipCategory(uint8 shipType_) public override pure returns (uint256){
         if (shipType_ == 6 || shipType_ == 8 || shipType_ == 12 || shipType_ == 15) {
             return 0;
         } else if (shipType_ == 1 || shipType_ == 5) {
