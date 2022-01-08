@@ -42,9 +42,9 @@ contract ShipAttrConfig is IShipAttrConfig {
         attrs[2] = shipType;
         attrs[3] = category;
         // attributes
-        attrs[5] = health;
-        attrs[6] = attack;
-        attrs[7] = defense;
+        attrs[4] = health;
+        attrs[5] = attack;
+        attrs[6] = defense;
         return attrs;
     }
 
