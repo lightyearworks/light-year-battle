@@ -32,9 +32,9 @@ contract ShipAttrConfig is IShipAttrConfig {
         uint8 shipType = info_.shipType;
         uint256 category = getShipCategory(shipType);
         // attributes
-        uint256 health = quality * 2;
-        uint256 attack = quality + 50;
-        uint256 defense = quality + 50;
+        uint256 health = 50 + quality * 2;
+        uint256 attack = 50 + quality;
+        uint256 defense = 50 + quality;
 
         uint256[] memory attrs = new uint256[](7);
         attrs[0] = level;
