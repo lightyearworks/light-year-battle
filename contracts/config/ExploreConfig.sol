@@ -19,14 +19,14 @@ contract ExploreConfig is IExploreConfig {
     }
 
     function heroAttrConfig() private view returns (IHeroAttrConfig){
-        return IHeroAttrConfig(registry().heroConfig());
+        return IHeroAttrConfig(registry().heroAttrConfig());
     }
 
     function getMayDropByLevel(uint256 level_) public override pure returns (uint256[] memory){
         uint256[] memory mayDrop = new uint256[](8);
         level_++;
-        mayDrop[0] = level_ * 100;
-        mayDrop[1] = level_ * 100;
+        mayDrop[0] = level_ * 50;
+        mayDrop[1] = level_ * 50;
         mayDrop[2] = level_ * 50;
         mayDrop[3] = level_ * 50;
         mayDrop[4] = mayDrop[0] + 100;
@@ -67,18 +67,27 @@ contract ExploreConfig is IExploreConfig {
     }
 
     function heroLuckReward(uint256 drop_, uint256[] memory heroIdArray_) public view returns (uint256){
+        uint256 boost = 100;
         for (uint i = 0; i < heroIdArray_.length; i++) {
             uint256 heroId = heroIdArray_[i];
             if (heroId != 0) {
-                uint256 luck = heroAttrConfig().getAttributesById(heroId)[6];
-                drop_ = drop_ * (100 + luck) / 100;
+                uint256 rarity = heroAttrConfig().getAttributesById(heroId)[3];
+                if (rarity == 1) {
+                    boost += 50;
+                } else if (rarity == 2) {
+                    boost += 100;
+                } else if (rarity == 3) {
+                    boost += 200;
+                } else if (rarity == 4) {
+                    boost += 400;
+                }
             }
         }
-        return drop_;
+        return drop_ * boost / 100;
     }
 
     function exploreDuration() public override pure returns (uint256){
-        return 6 hours;
+        return 1 minutes;
     }
 
     function _random(uint256 seed_, uint256 randomSize_) private view returns (uint256){
