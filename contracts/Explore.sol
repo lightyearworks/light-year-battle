@@ -94,7 +94,9 @@ contract Explore is Ownable {
         _handleExploreResult(index_, win, userMaxLevel, level_, battleBytes);
 
         //user explore time
-        account().setUserExploreTime(_msgSender(), now);
+        if (win == 1) {
+            account().setUserExploreTime(_msgSender(), now);
+        }
     }
 
     function _exploreDrop(uint256[] memory winResource_) private {

@@ -25,24 +25,24 @@ contract ExploreConfig is IExploreConfig {
     function getMayDropByLevel(uint256 level_) public override pure returns (uint256[] memory){
         uint256[] memory mayDrop = new uint256[](8);
         level_++;
-        mayDrop[0] = level_ * 50;
-        mayDrop[1] = level_ * 50;
-        mayDrop[2] = level_ * 50;
-        mayDrop[3] = level_ * 50;
-        mayDrop[4] = mayDrop[0] + 100;
-        mayDrop[5] = mayDrop[1] + 100;
-        mayDrop[6] = mayDrop[2] + 100;
-        mayDrop[7] = mayDrop[3] + 100;
+        mayDrop[0] = level_ * 500;
+        mayDrop[1] = level_ * 500;
+        mayDrop[2] = level_ * 500;
+        mayDrop[3] = level_ * 500;
+        mayDrop[4] = mayDrop[0] + 200;
+        mayDrop[5] = mayDrop[1] + 200;
+        mayDrop[6] = mayDrop[2] + 200;
+        mayDrop[7] = mayDrop[3] + 200;
         return mayDrop;
     }
 
     function getRealDropByLevel(uint256 level_, uint256[] memory heroIdArray_) public override view returns (uint256[] memory){
         uint256[] memory mayDrop = getMayDropByLevel(level_);
         uint256[] memory realDrop = new uint256[](8);
-        realDrop[4] = (mayDrop[0] + _random(0, 100)) * 1e18;
-        realDrop[5] = (mayDrop[1] + _random(1, 100)) * 1e18;
-        realDrop[6] = (mayDrop[2] + _random(2, 100)) * 1e18;
-        realDrop[7] = (mayDrop[3] + _random(3, 100)) * 1e18;
+        realDrop[4] = (mayDrop[0] + _random(0, 200)) * 1e18;
+        realDrop[5] = (mayDrop[1] + _random(1, 200)) * 1e18;
+        realDrop[6] = (mayDrop[2] + _random(2, 200)) * 1e18;
+        realDrop[7] = (mayDrop[3] + _random(3, 200)) * 1e18;
 
         //drop reward by hero luck
         realDrop[0] = heroLuckReward(realDrop[4], heroIdArray_);
@@ -87,7 +87,7 @@ contract ExploreConfig is IExploreConfig {
     }
 
     function exploreDuration() public override pure returns (uint256){
-        return 1 minutes;
+        return 8 hours;
     }
 
     function _random(uint256 seed_, uint256 randomSize_) private view returns (uint256){
