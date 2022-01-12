@@ -169,6 +169,13 @@ contract Fleets is FleetsModel, IFleets, Ownable {
             _fleetHeroRemove(_msgSender(), fleetIndex_, nowArray[i]);
         }
 
+        //remove hero from other fleets
+        for (uint256 i = 0; i < heroIdArray_.length; i++) {
+            if (heroIdArray_[i] != 0 && getHeroPosition(heroIdArray_[i]) != 0) {
+                _fleetHeroRemove(_msgSender(), getHeroPosition(heroIdArray_[i]) - 1, heroIdArray_[i]);
+            }
+        }
+
         //attach
         for (uint256 i = 0; i < heroIdArray_.length; i++) {
             _fleetHeroAttach(_msgSender(), fleetIndex_, heroIdArray_[i]);
@@ -321,4 +328,28 @@ contract Fleets is FleetsModel, IFleets, Ownable {
         _changeFleetStatus(_msgSender(), fleetIndex_, FleetStatus.Home, _msgSender(), block.timestamp, block.timestamp);
     }
 
+    function getHeroPosition(uint256 heroId_) public view returns (uint256){
+        Fleet[] memory fleets = userFleets(_msgSender());
+        for (uint256 i = 0; i < fleets.length; i++) {
+            for (uint256 j = 0; j < fleets[i].heroIdArray.length; j++) {
+                if (fleets[i].heroIdArray[j] == heroId_) {
+                    return i + 1;
+                }
+            }
+        }
+        return 0;
+    }
+
+    function getFleetsHeroArray() external view returns (uint256[] memory){
+        Fleet[] memory fleets = userFleets(_msgSender());
+        uint256[] memory heroArray = new uint256[](fleets.length * 4);
+        uint256 index = 0;
+        for (uint i = 0; i < fleets.length; i++) {
+            for (uint j = 0; j < fleets[i].heroIdArray.length; j++) {
+                heroArray[index] = fleets[i].heroIdArray[j];
+                index++;
+            }
+        }
+        return heroArray;
+    }
 }
