@@ -10,6 +10,7 @@ interface IBattle {
         uint32 health;
         uint32 attack;
         uint32 defense;
+        uint8 shipType;
     }
 
     struct BattleInfo {

@@ -58,7 +58,7 @@ contract ExploreConfig is IExploreConfig {
         uint32 health = 30 * uint32(level_ + 1);
         uint32 attack = 30 * uint32(level_ + 1);
         uint32 defense = 30 * uint32(level_ + 1);
-        IBattle.BattleShip memory info = IBattle.BattleShip(health, attack, defense);
+        IBattle.BattleShip memory info = IBattle.BattleShip(health, attack, defense, 6);
         ships[0] = info;
         ships[1] = info;
         ships[2] = info;

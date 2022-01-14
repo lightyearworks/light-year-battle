@@ -129,8 +129,7 @@ contract Battle is IBattle {
         //attack health
         for (uint i = 0; i < fleetsConfig().getFleetShipLimit(); i++) {
             if (i < attackerLen) {
-                BattleShip memory attackerShip = attackerShips_[i];
-                result = BytesUtils._addBytes(result, attackerShip.health);
+                result = BytesUtils._addBytes(result, attackerShips_[i].health);
             } else {
                 result = BytesUtils._addBytes(result, 0);
             }
@@ -139,10 +138,25 @@ contract Battle is IBattle {
         //defender health
         for (uint i = 0; i < fleetsConfig().getFleetShipLimit(); i++) {
             if (i < defenderLen) {
-                BattleShip memory defenderShip = defenderShips_[i];
-                result = BytesUtils._addBytes(result, defenderShip.health);
+                result = BytesUtils._addBytes(result, defenderShips_[i].health);
             } else {
                 result = BytesUtils._addBytes(result, 0);
+            }
+        }
+
+        //attacker defender ship type
+        for (uint i = 0; i < fleetsConfig().getFleetShipLimit(); i++) {
+            if (i < attackerLen) {
+                result = abi.encodePacked(result, attackerShips_[i].shipType);
+            } else {
+                result = abi.encodePacked(result, uint8(0));
+            }
+        }
+        for (uint i = 0; i < fleetsConfig().getFleetShipLimit(); i++) {
+            if (i < defenderLen) {
+                result = abi.encodePacked(result, defenderShips_[i].shipType);
+            } else {
+                result = abi.encodePacked(result, uint8(0));
             }
         }
 
@@ -222,7 +236,7 @@ contract Battle is IBattle {
         }
 
         //create battle info
-        BattleInfo memory info = BattleInfo(0x00, battleType, fromIndex, toIndex, attributeIndex, defenderShip.health);
+        BattleInfo memory info = BattleInfo(0x00, battleType, fromIndex, toIndex, attributeIndex, delta);
 
         //battle info to bytes
         return (_battleInfoToBytes(info), defender_);
@@ -232,10 +246,11 @@ contract Battle is IBattle {
         BattleShip[] memory ships = new BattleShip[](array.length);
         for (uint i = 0; i < ships.length; i++) {
             uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(array[i]);
+            uint8 shipType = uint8(attrs[2]);
             uint32 health = uint32(attrs[4]);
             uint32 attack = uint32(attrs[5]);
             uint32 defense = uint32(attrs[6]);
-            BattleShip memory battleShip = BattleShip(health, attack, defense);
+            BattleShip memory battleShip = BattleShip(health, attack, defense, shipType);
             ships[i] = battleShip;
         }
         return ships;
@@ -243,7 +258,7 @@ contract Battle is IBattle {
 
     function _basicBattleShip() private pure returns (BattleShip[] memory){
         BattleShip[] memory ships = new BattleShip[](1);
-        ships[0] = BattleShip(10, 10, 10);
+        ships[0] = BattleShip(10, 10, 10, 6);
         return ships;
     }
 
