@@ -14,7 +14,7 @@ contract AccountModel {
 
     mapping(address => uint256) public userExploreLevelMap;
 
-    mapping(address => uint256) public userExploreTimeMap;
+    mapping(address => mapping(uint256 => uint256)) public userExploreTimeMap;
 
     mapping(address => bytes[]) public userBattleHistoryMap;
 }

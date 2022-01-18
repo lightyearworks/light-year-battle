@@ -10,14 +10,14 @@ interface IAccount {
     function getUserId(address) external view returns (uint256);
 
     function getUserAddress(uint256) external view returns (address);
-    
+
     function userExploreLevel(address addr_) external view returns (uint256);
-    
+
     function addExploreLevel(address addr_) external;
-    
+
     function saveBattleHistory(address addr_, bytes memory history_) external;
 
-    function setUserExploreTime(address addr_, uint256 time_) external;
+    function setUserExploreTime(address addr_, uint256 fleetIndex_, uint256 time_) external;
 
-    function userExploreTime(address addr_) external view returns(uint256);
+    function userExploreTime(address addr_, uint256 fleetIndex_) external view returns (uint256);
 }

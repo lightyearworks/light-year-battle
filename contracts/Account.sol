@@ -29,8 +29,8 @@ contract Account is AccountModel, IAccount, Ownable {
         return userExploreLevelMap[addr_];
     }
 
-    function userExploreTime(address addr_) external override view returns (uint256){
-        return userExploreTimeMap[addr_];
+    function userExploreTime(address addr_, uint256 fleetIndex_) external override view returns (uint256){
+        return userExploreTimeMap[addr_][fleetIndex_];
     }
 
     function addUser(address addr_) public override onlyOperator {
@@ -49,7 +49,7 @@ contract Account is AccountModel, IAccount, Ownable {
         userBattleHistoryMap[addr_].push(history_);
     }
 
-    function setUserExploreTime(address addr_, uint256 time_) external override onlyOperator{
-        userExploreTimeMap[addr_] = time_;
+    function setUserExploreTime(address addr_, uint256 fleetIndex_, uint256 time_) external override onlyOperator {
+        userExploreTimeMap[addr_][fleetIndex_] = time_;
     }
 }
