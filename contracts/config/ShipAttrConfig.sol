@@ -32,9 +32,9 @@ contract ShipAttrConfig is IShipAttrConfig {
         uint8 shipType = info_.shipType;
         uint256 category = getShipCategory(shipType);
         // attributes
-        uint256 health = getAttack(quality, shipType) * 2;
-        uint256 attack = getAttack(quality, shipType);
-        uint256 defense = getAttack(quality, shipType);
+        uint256 health = getAttack(level, quality, shipType) * 2;
+        uint256 attack = getAttack(level, quality, shipType);
+        uint256 defense = getAttack(level, quality, shipType);
 
         uint256[] memory attrs = new uint256[](7);
         attrs[0] = level;
@@ -60,8 +60,9 @@ contract ShipAttrConfig is IShipAttrConfig {
         }
     }
 
-    function getAttack(uint256 quality_, uint256 shipType_) public pure returns (uint256){
+    function getAttack(uint256 level_, uint256 quality_, uint256 shipType_) public pure returns (uint256){
         uint256 basic = 50 + quality_;
+        basic = basic * (level_ + 1) * 150 / 100;
         if (shipType_ == 6) {
             return basic * 1;
         } else if (shipType_ == 8) {
