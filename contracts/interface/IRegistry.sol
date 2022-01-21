@@ -3,9 +3,6 @@ pragma solidity ^0.6.12;
 
 interface IRegistry {
 
-    // operator
-    function isOperator(address operator_) external view returns (bool);
-
     // base and research
     function base() external view returns (address);
     function research() external view returns (address);
@@ -23,6 +20,7 @@ interface IRegistry {
     function burning() external view returns (address);
     function uniswapV2Router() external view returns (address);
     function stableToken() external view returns (address);
+    function treasury() external view returns (address);
 
     // fleets config and ships config
     function shipConfig() external view returns (address);
@@ -46,4 +44,6 @@ interface IRegistry {
     function tokenSilicate() external view returns (address);
     function tokenLightCoin() external view returns (address);
 
+    // access
+    function canMintCommodity(address) external view returns (bool);
 }

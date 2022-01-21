@@ -69,7 +69,7 @@ contract Explore is Ownable {
     function fleetBattleExplore(uint256 index_, uint256 level_) public {
 
         //check user explore time
-        require(now >= account().userExploreTime(_msgSender()) + exploreConfig().exploreDuration(), "Explore not ready.");
+        require(now >= account().userExploreTime(_msgSender(), index_) + exploreConfig().exploreDuration(), "Explore not ready.");
 
         //get ship info array from fleet
         IFleets.Fleet memory fleet = fleets().userFleet(_msgSender(), index_);

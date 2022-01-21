@@ -1,17 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.6.12;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./model/AccountModel.sol";
 import "./interface/IAccount.sol";
 import "./interface/IRegistry.sol";
 
-contract Account is AccountModel, IAccount, Ownable {
-
-    modifier onlyOperator(){
-        require(IRegistry(registryAddress).isOperator(_msgSender()), "onlyOperator: require operator.");
-        _;
-    }
+contract Account is AccountModel, IAccount {
 
     function getTotalUsers() public override view returns (uint256){
         return totalUsers;
@@ -33,7 +27,8 @@ contract Account is AccountModel, IAccount, Ownable {
         return userExploreTimeMap[addr_][fleetIndex_];
     }
 
-    function addUser(address addr_) public override onlyOperator {
+    function addUser(address addr_) public override {
+        require(msg.sender==IRegistry(registryAddress).fleets(), "require fleets");
         require(userAddressMap[addr_] == 0, "addUser: user already exists.");
         uint32 userId = totalUsers + 1;
         userIdMap[userId] = addr_;
@@ -41,15 +36,18 @@ contract Account is AccountModel, IAccount, Ownable {
         totalUsers++;
     }
 
-    function addExploreLevel(address addr_) external override onlyOperator {
+    function addExploreLevel(address addr_) external override {
+        require(msg.sender==IRegistry(registryAddress).explore(), "require explore");
         userExploreLevelMap[addr_]++;
     }
 
-    function saveBattleHistory(address addr_, bytes memory history_) external override onlyOperator {
+    function saveBattleHistory(address addr_, bytes memory history_) external override {
+        require(msg.sender==IRegistry(registryAddress).battle(), "require battle");
         userBattleHistoryMap[addr_].push(history_);
     }
 
-    function setUserExploreTime(address addr_, uint256 fleetIndex_, uint256 time_) external override onlyOperator {
+    function setUserExploreTime(address addr_, uint256 fleetIndex_, uint256 time_) external override {
+        require(msg.sender==IRegistry(registryAddress).battle(), "require explore");
         userExploreTimeMap[addr_][fleetIndex_] = time_;
     }
 }
