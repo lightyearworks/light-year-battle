@@ -10,6 +10,7 @@ interface IHero {
         uint8 heroType;
     }
 
+    function safeTransferFrom(address from, address to, uint256 tokenId) external;
     function heroInfo(uint256 shipId_) external view returns (Info memory);
     function upgradeHero(uint256 heroFromTokenId_, uint256 heroToTokenId_) external;
     function convertHero(uint256 heroTokenId_) external;

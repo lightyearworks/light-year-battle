@@ -36,7 +36,7 @@ contract ExploreConfig is IExploreConfig {
         return mayDrop;
     }
 
-    function getRealDropByLevel(uint256 level_, uint256[] memory heroIdArray_) public override view returns (uint256[] memory){
+    function getRealDropByLevel(uint256 level_, uint32[] memory heroIdArray_) public override view returns (uint256[] memory){
         uint256[] memory mayDrop = getMayDropByLevel(level_);
         uint256[] memory realDrop = new uint256[](8);
         realDrop[4] = (mayDrop[0] + _random(0, 200)) * 1e18;
@@ -66,7 +66,7 @@ contract ExploreConfig is IExploreConfig {
         return ships;
     }
 
-    function heroLuckReward(uint256 drop_, uint256[] memory heroIdArray_) public view returns (uint256){
+    function heroLuckReward(uint256 drop_, uint32[] memory heroIdArray_) public view returns (uint256){
         uint256 boost = 100;
         for (uint i = 0; i < heroIdArray_.length; i++) {
             uint256 heroId = heroIdArray_[i];

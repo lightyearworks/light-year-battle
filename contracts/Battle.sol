@@ -58,11 +58,12 @@ contract Battle is IBattle {
 
         //require fleet status
         IFleets.Fleet memory attackerFleet = fleets().userFleet(msg.sender, fleetIndex_);
-        require(attackerFleet.status == IFleets.FleetStatus.GoBattle, "battle: The fleet has not prepared for battle.");
+        require(attackerFleet.status == 3, "battle: The fleet has not prepared for battle.");
         require(now >= attackerFleet.missionEndTime, "battle: The fleet has not arrived yet.");
 
         //check defender fleet
-        IFleets.Fleet memory defenderFleet = fleets().getGuardFleet(attackerFleet.target);
+        address targetAddress = account().getUserAddress(attackerFleet.target);
+        IFleets.Fleet memory defenderFleet = fleets().getGuardFleet(targetAddress);
 
         //battle
         bytes memory battleBytes = battleByFleet(attackerFleet, defenderFleet);

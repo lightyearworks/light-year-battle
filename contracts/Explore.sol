@@ -60,7 +60,7 @@ contract Explore is Ownable {
         }
 
         //win and get real drop
-        uint256[] memory heroIdArray = fleets().userFleet(_msgSender(), index_).heroIdArray;
+        uint32[] memory heroIdArray = fleets().userFleet(_msgSender(), index_).heroIdArray;
         uint256[] memory winResource = exploreConfig().getRealDropByLevel(level_, heroIdArray);
         _exploreDrop(winResource);
         emit ExploreResult(1, winResource, userMaxLevel_, battleBytes_);
@@ -95,7 +95,7 @@ contract Explore is Ownable {
 
         //user explore time
         if (win == 1) {
-            account().setUserExploreTime(_msgSender(), now);
+            account().setUserExploreTime(_msgSender(), index_, now);
         }
     }
 
@@ -106,16 +106,4 @@ contract Explore is Ownable {
         ICommodityERC20(registry().tokenEnergy()).mint(_msgSender(), winResource_[3]);
     }
 
-    uint256 private nonce;
-
-    function _random(uint256 randomSize_) private returns (uint256){
-        nonce++;
-        uint256 difficulty = block.difficulty;
-        uint256 gaslimit = block.gaslimit;
-        uint256 number = block.number;
-        uint256 timestamp = block.timestamp;
-        uint256 gasprice = tx.gasprice;
-        uint256 random = uint256(keccak256(abi.encodePacked(nonce, difficulty, gaslimit, number, timestamp, gasprice))) % randomSize_;
-        return random;
-    }
 }

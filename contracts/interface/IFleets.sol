@@ -5,33 +5,20 @@ pragma solidity ^0.6.12;
 interface IFleets {
 
     //fleet status
-    enum FleetStatus {Home, Guard, Market, GoBattle, Repair}
+    //0-Home, 1-Guard, 2-Market, 3-GoBattle
 
     //struct Fleet
     struct Fleet {
-        FleetStatus status;
-        address target;
-        uint256 missionStartTime;
-        uint256 missionEndTime;
-        uint256[] shipIdArray;
-        uint256[] heroIdArray;
-        Asset asset;
-    }
-
-    //struct Asset
-    struct Asset {
-        uint256 iron;
-        uint256 gold;
-        uint256 silicate;
-        uint256 energy;
+        uint32[] shipIdArray;
+        uint32[] heroIdArray;
+        uint32 missionStartTime;
+        uint32 missionEndTime;
+        uint32 target;
+        uint8 status;
     }
 
     function userFleet(address, uint256) external view returns (Fleet memory);
-
     function userFleets(address) external view returns (Fleet[] memory);
-
     function getGuardFleet(address addr_) external view returns (Fleet memory);
-
     function createFleet() external;
-
 }

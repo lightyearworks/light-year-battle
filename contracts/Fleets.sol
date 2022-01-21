@@ -59,36 +59,36 @@ contract Fleets is FleetsModel, IFleets, Ownable {
     }
 
     function _stakeShip(address addr_, uint256 tokenId_) private {
-        IShip(registry().ship()).operatorTransfer(addr_, address(this), tokenId_);
+        IShip(registry().ship()).safeTransferFrom(addr_, address(this), tokenId_);
         shipOwnerMap[tokenId_] = addr_;
     }
 
     function _withdrawShip(address addr_, uint256 tokenId_) private {
         require(shipOwnerMap[tokenId_] == addr_, "_withdrawShip: is not owner.");
-        IShip(registry().ship()).operatorTransfer(address(this), addr_, tokenId_);
+        IShip(registry().ship()).safeTransferFrom(address(this), addr_, tokenId_);
         delete shipOwnerMap[tokenId_];
     }
 
     function _stakeHero(address addr_, uint256 tokenId_) private {
-        IHero(registry().hero()).operatorTransfer(addr_, address(this), tokenId_);
+        IHero(registry().hero()).safeTransferFrom(addr_, address(this), tokenId_);
         heroOwnerMap[tokenId_] = addr_;
     }
 
     function _withdrawHero(address addr_, uint256 tokenId_) private {
         require(heroOwnerMap[tokenId_] == addr_, "_withdrawHero: is not owner.");
-        IHero(registry().hero()).operatorTransfer(address(this), addr_, tokenId_);
+        IHero(registry().hero()).safeTransferFrom(address(this), addr_, tokenId_);
         delete heroOwnerMap[tokenId_];
     }
 
-    function _fleetShipRemove(address addr_, uint256 fleetIndex_, uint256 shipId_) private {
-        uint256[] storage nowArray = userFleetsMap[addr_][fleetIndex_].shipIdArray;
+    function _fleetShipRemove(address addr_, uint256 fleetIndex_, uint32 shipId_) private {
+        uint32[] storage nowArray = userFleetsMap[addr_][fleetIndex_].shipIdArray;
 
         //index
         (bool exist,uint256 index) = ArrayUtils.indexOf(nowArray, shipId_);
         require(exist, "fleetShipRemove: The ship is not in the fleet.");
 
         //remove
-        uint256 temp = nowArray[index];
+        uint32 temp = nowArray[index];
         nowArray[index] = nowArray[nowArray.length - 1];
         nowArray[nowArray.length - 1] = temp;
         nowArray.pop();
@@ -97,8 +97,8 @@ contract Fleets is FleetsModel, IFleets, Ownable {
         _withdrawShip(addr_, shipId_);
     }
 
-    function _fleetShipAttach(address addr_, uint256 fleetIndex_, uint256 shipId_) private {
-        uint256[] storage nowArray = userFleetsMap[addr_][fleetIndex_].shipIdArray;
+    function _fleetShipAttach(address addr_, uint256 fleetIndex_, uint32 shipId_) private {
+        uint32[] storage nowArray = userFleetsMap[addr_][fleetIndex_].shipIdArray;
 
         //attach
         nowArray.push(shipId_);
@@ -107,15 +107,15 @@ contract Fleets is FleetsModel, IFleets, Ownable {
         _stakeShip(addr_, shipId_);
     }
 
-    function _fleetHeroRemove(address addr_, uint256 fleetIndex_, uint256 heroId_) private {
-        uint256[] storage nowArray = userFleetsMap[addr_][fleetIndex_].heroIdArray;
+    function _fleetHeroRemove(address addr_, uint256 fleetIndex_, uint32 heroId_) private {
+        uint32[] storage nowArray = userFleetsMap[addr_][fleetIndex_].heroIdArray;
 
         //index
         (bool exist,uint256 index) = ArrayUtils.indexOf(nowArray, heroId_);
         require(exist, "fleetHeroRemove: The hero is not in the fleet.");
 
         //remove
-        uint256 temp = nowArray[index];
+        uint32 temp = nowArray[index];
         nowArray[index] = nowArray[nowArray.length - 1];
         nowArray[nowArray.length - 1] = temp;
         nowArray.pop();
@@ -127,8 +127,8 @@ contract Fleets is FleetsModel, IFleets, Ownable {
 
     }
 
-    function _fleetHeroAttach(address addr_, uint256 fleetIndex_, uint256 heroId_) private {
-        uint256[] storage nowArray = userFleetsMap[addr_][fleetIndex_].heroIdArray;
+    function _fleetHeroAttach(address addr_, uint256 fleetIndex_, uint32 heroId_) private {
+        uint32[] storage nowArray = userFleetsMap[addr_][fleetIndex_].heroIdArray;
 
         //attach
         nowArray.push(heroId_);
@@ -140,9 +140,9 @@ contract Fleets is FleetsModel, IFleets, Ownable {
 
     }
 
-    function _fleetFormationShip(uint256 fleetIndex_, uint256[] memory shipIdArray_) private {
+    function _fleetFormationShip(uint256 fleetIndex_, uint32[] memory shipIdArray_) private {
         Fleet[] memory fleetArray = userFleets(_msgSender());
-        uint256[] memory nowArray = fleetArray[fleetIndex_].shipIdArray;
+        uint32[] memory nowArray = fleetArray[fleetIndex_].shipIdArray;
 
         //remove
         for (uint256 i = 0; i < nowArray.length; i++) {
@@ -160,9 +160,9 @@ contract Fleets is FleetsModel, IFleets, Ownable {
 
     }
 
-    function _fleetFormationHero(uint256 fleetIndex_, uint256[] memory heroIdArray_) private {
+    function _fleetFormationHero(uint256 fleetIndex_, uint32[] memory heroIdArray_) private {
         Fleet[] memory fleetArray = userFleets(_msgSender());
-        uint256[] memory nowArray = fleetArray[fleetIndex_].heroIdArray;
+        uint32[] memory nowArray = fleetArray[fleetIndex_].heroIdArray;
 
         //remove
         for (uint256 i = 0; i < nowArray.length; i++) {
@@ -182,7 +182,7 @@ contract Fleets is FleetsModel, IFleets, Ownable {
         }
     }
 
-    function fleetFormationCreateShipHero(uint256[] memory shipIdArray_, uint256[] memory heroIdArray_) external {
+    function fleetFormationCreateShipHero(uint32[] memory shipIdArray_, uint32[] memory heroIdArray_) external {
         //create fleet
         createFleet();
 
@@ -200,7 +200,7 @@ contract Fleets is FleetsModel, IFleets, Ownable {
 
     }
 
-    function fleetFormationShipHero(uint256 fleetIndex_, uint256[] memory shipIdArray_, uint256[] memory heroIdArray_) public {
+    function fleetFormationShipHero(uint256 fleetIndex_, uint32[] memory shipIdArray_, uint32[] memory heroIdArray_) public {
         require(fleetsConfig().checkFleetFormationConfig(shipIdArray_), "fleetFormationShipHero: check config failed.");
 
         _fleetFormationShip(fleetIndex_, shipIdArray_);
@@ -223,7 +223,7 @@ contract Fleets is FleetsModel, IFleets, Ownable {
         return ships;
     }
 
-    function _checkFleetStatus(address addr_, uint256 fleetIndex_, FleetStatus status_) private view returns (bool){
+    function _checkFleetStatus(address addr_, uint256 fleetIndex_, uint8 status_) private view returns (bool){
         Fleet memory fleet = userFleet(addr_, fleetIndex_);
         return fleet.status == status_;
     }
@@ -231,16 +231,16 @@ contract Fleets is FleetsModel, IFleets, Ownable {
     function _changeFleetStatus(
         address addr_,
         uint256 fleetIndex_,
-        FleetStatus status_,
-        address target_,
+        uint8 status_,
+        uint32 target_,
         uint256 start_,
         uint256 end_
     ) private {
         Fleet storage fleet = userFleetsMap[addr_][fleetIndex_];
         fleet.status = status_;
         fleet.target = target_;
-        fleet.missionStartTime = start_;
-        fleet.missionEndTime = end_;
+        fleet.missionStartTime = uint32(start_);
+        fleet.missionEndTime = uint32(end_);
     }
 
     function createFleet() public override {
@@ -251,14 +251,14 @@ contract Fleets is FleetsModel, IFleets, Ownable {
     }
 
     function _emptyFleet() private pure returns (Fleet memory){
-        return Fleet(FleetStatus.Home, address(0), 0, 0, new uint256[](0), new uint256[](0), Asset(0, 0, 0, 0));
+        return Fleet(new uint32[](0), new uint32[](0), 0, 0, 0, 0);
     }
 
     function getGuardFleet(address addr_) public view override returns (Fleet memory){
         Fleet[] memory fleets = userFleets(addr_);
         for (uint i = 0; i < fleets.length; i++) {
             Fleet memory fleet = fleets[i];
-            if (fleet.status == FleetStatus.Guard) {
+            if (fleet.status == 1) {
                 return fleet;
             }
         }
@@ -272,12 +272,12 @@ contract Fleets is FleetsModel, IFleets, Ownable {
 
     function goHome(uint256 index_) public {
         uint256 duration = fleetsConfig().getGoHomeDuration(_msgSender(), index_);
-        _changeFleetStatus(_msgSender(), index_, FleetStatus.Home, _msgSender(), block.timestamp, block.timestamp + duration);
+        _changeFleetStatus(_msgSender(), index_, 0, 0, uint32(block.timestamp), uint32(block.timestamp + duration));
     }
 
     function goMarket(uint256 index_) public {
         uint256 duration = fleetsConfig().getGoMarketDuration(_msgSender(), index_);
-        _changeFleetStatus(_msgSender(), index_, FleetStatus.Market, _msgSender(), block.timestamp, block.timestamp + duration);
+        _changeFleetStatus(_msgSender(), index_, 2, 0, uint32(block.timestamp), uint32(block.timestamp + duration));
     }
 
     function goBattleByCoordinate(string memory coordinate_, uint256 fleetIndex_) public {
@@ -292,7 +292,7 @@ contract Fleets is FleetsModel, IFleets, Ownable {
 
         string memory userCoordinate = Coordinate.userIdToCoordinateString(account().getUserId(_msgSender()));
         uint256 second = Distance.getTransportTime(userCoordinate, coordinate_);
-        _changeFleetStatus(_msgSender(), fleetIndex_, FleetStatus.GoBattle, target, block.timestamp, block.timestamp + second);
+        _changeFleetStatus(_msgSender(), fleetIndex_, 3, userId, block.timestamp, block.timestamp + second);
     }
 
     function quickFly(uint256 index_) public {
@@ -319,13 +319,13 @@ contract Fleets is FleetsModel, IFleets, Ownable {
     }
 
     function guardHome(uint256 fleetIndex_) external {
-        require(_checkFleetStatus(_msgSender(), fleetIndex_, FleetStatus.Home), "guardHome: The fleet is on a mission.");
-        _changeFleetStatus(_msgSender(), fleetIndex_, FleetStatus.Guard, _msgSender(), block.timestamp, block.timestamp);
+        require(_checkFleetStatus(_msgSender(), fleetIndex_, 0), "guardHome: The fleet is on a mission.");
+        _changeFleetStatus(_msgSender(), fleetIndex_, 1, 0, block.timestamp, block.timestamp);
     }
 
     function cancelGuardHome(uint256 fleetIndex_) external {
-        require(_checkFleetStatus(_msgSender(), fleetIndex_, FleetStatus.Guard), "cancelGuardHome: The fleet is not guarding.");
-        _changeFleetStatus(_msgSender(), fleetIndex_, FleetStatus.Home, _msgSender(), block.timestamp, block.timestamp);
+        require(_checkFleetStatus(_msgSender(), fleetIndex_, 1), "cancelGuardHome: The fleet is not guarding.");
+        _changeFleetStatus(_msgSender(), fleetIndex_, 0, 0, block.timestamp, block.timestamp);
     }
 
     function getHeroPosition(uint256 heroId_) public view returns (uint256){

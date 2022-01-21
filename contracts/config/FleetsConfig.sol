@@ -71,7 +71,7 @@ contract FleetsConfig is IFleetsConfig {
         return config;
     }
 
-    function checkFleetFormationConfig(uint256[] memory shipIdArray_) public override view returns (bool){
+    function checkFleetFormationConfig(uint32[] memory shipIdArray_) public override view returns (bool){
         uint256[] memory count = new uint256[](4);
         for (uint i = 0; i < shipIdArray_.length; i++) {
             uint256 category = shipAttrConfig().getShipCategory(ship().shipInfo(shipIdArray_[i]).shipType);
@@ -89,7 +89,7 @@ contract FleetsConfig is IFleetsConfig {
 
     function fleetTotalAttack(address addr_, uint256 index_) public override view returns (uint256){
         IFleets.Fleet memory fleet = fleets().userFleet(addr_, index_);
-        uint256[] memory shipIdArray = fleet.shipIdArray;
+        uint32[] memory shipIdArray = fleet.shipIdArray;
         uint256 totalAttack = 0;
         for (uint i = 0; i < shipIdArray.length; i++) {
             uint256 attack = shipAttrConfig().getAttributesById(shipIdArray[i])[5];

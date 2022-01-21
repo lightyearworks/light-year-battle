@@ -21,7 +21,7 @@ interface IFleetsConfig {
 
     function fleetsAttackArray(address addr_) external view returns (uint256[] memory);
 
-    function checkFleetFormationConfig(uint256[] memory shipIdArray_) external view returns (bool);
+    function checkFleetFormationConfig(uint32[] memory shipIdArray_) external view returns (bool);
 
     function getQuickFlyCost() external view returns (address, uint256);
 
