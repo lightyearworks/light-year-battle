@@ -297,7 +297,7 @@ contract Fleets is FleetsModel, IFleets, IERC721Receiver {
 
     function quickFly(uint256 index_) public {
         (address tokenAddress,uint256 cost) = fleetsConfig().getQuickFlyCost();
-        ICommodityERC20(tokenAddress).operatorTransfer(msg.sender, address(this), cost);
+        ICommodityERC20(tokenAddress).transferFrom(msg.sender, address(this), cost);
         ICommodityERC20(tokenAddress).burn(cost);
         Fleet storage fleet = userFleetsMap[msg.sender][index_];
         fleet.missionEndTime = fleet.missionStartTime;

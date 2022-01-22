@@ -99,10 +99,10 @@ contract Explore {
     }
 
     function _exploreDrop(uint256[] memory winResource_) private {
-        ICommodityERC20(registry().tokenIron()).mint(msg.sender, winResource_[0]);
-        ICommodityERC20(registry().tokenGold()).mint(msg.sender, winResource_[1]);
-        ICommodityERC20(registry().tokenSilicate()).mint(msg.sender, winResource_[2]);
-        ICommodityERC20(registry().tokenEnergy()).mint(msg.sender, winResource_[3]);
+        ICommodityERC20(registry().tokenIron()).mintByInternalContracts(msg.sender, winResource_[0]);
+        ICommodityERC20(registry().tokenGold()).mintByInternalContracts(msg.sender, winResource_[1]);
+        ICommodityERC20(registry().tokenSilicate()).mintByInternalContracts(msg.sender, winResource_[2]);
+        ICommodityERC20(registry().tokenEnergy()).mintByInternalContracts(msg.sender, winResource_[3]);
     }
 
 }

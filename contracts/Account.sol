@@ -47,7 +47,7 @@ contract Account is AccountModel, IAccount {
     }
 
     function setUserExploreTime(address addr_, uint256 fleetIndex_, uint256 time_) external override {
-        require(msg.sender==IRegistry(registryAddress).battle(), "require explore");
+        require(msg.sender==IRegistry(registryAddress).explore(), "require explore");
         userExploreTimeMap[addr_][fleetIndex_] = time_;
     }
 }
