@@ -2,7 +2,6 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.6.12;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./utils/BytesUtils.sol";
 import "./interface/IBattle.sol";
 import "./interface/IAccount.sol";

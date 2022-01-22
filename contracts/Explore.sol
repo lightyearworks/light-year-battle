@@ -2,7 +2,6 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.6.12;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interface/IRegistry.sol";
 import "./interface/IFleets.sol";
 import "./interface/IAccount.sol";
@@ -11,7 +10,7 @@ import "./interface/IShip.sol";
 import "./interface/IExploreConfig.sol";
 import "./interface/ICommodityERC20.sol";
 
-contract Explore is Ownable {
+contract Explore {
 
     address public registryAddress;
 
@@ -55,12 +54,12 @@ contract Explore is Ownable {
 
         //add user explore level
         if (userMaxLevel_ == level_) {
-            account().addExploreLevel(_msgSender());
+            account().addExploreLevel(msg.sender);
             userMaxLevel_++;
         }
 
         //win and get real drop
-        uint32[] memory heroIdArray = fleets().userFleet(_msgSender(), index_).heroIdArray;
+        uint32[] memory heroIdArray = fleets().userFleet(msg.sender, index_).heroIdArray;
         uint256[] memory winResource = exploreConfig().getRealDropByLevel(level_, heroIdArray);
         _exploreDrop(winResource);
         emit ExploreResult(1, winResource, userMaxLevel_, battleBytes_);
@@ -69,10 +68,10 @@ contract Explore is Ownable {
     function fleetBattleExplore(uint256 index_, uint256 level_) public {
 
         //check user explore time
-        require(now >= account().userExploreTime(_msgSender(), index_) + exploreConfig().exploreDuration(), "Explore not ready.");
+        require(now >= account().userExploreTime(msg.sender, index_) + exploreConfig().exploreDuration(), "Explore not ready.");
 
         //get ship info array from fleet
-        IFleets.Fleet memory fleet = fleets().userFleet(_msgSender(), index_);
+        IFleets.Fleet memory fleet = fleets().userFleet(msg.sender, index_);
         uint256 attackerLen = fleet.shipIdArray.length;
         IShip.Info[] memory attackerShips = new IShip.Info[](attackerLen);
         for (uint i = 0; i < attackerLen; i++) {
@@ -90,20 +89,20 @@ contract Explore is Ownable {
         uint8 win = uint8(battleBytes[0]);
 
         //handle explore result
-        uint256 userMaxLevel = account().userExploreLevel(_msgSender());
+        uint256 userMaxLevel = account().userExploreLevel(msg.sender);
         _handleExploreResult(index_, win, userMaxLevel, level_, battleBytes);
 
         //user explore time
         if (win == 1) {
-            account().setUserExploreTime(_msgSender(), index_, now);
+            account().setUserExploreTime(msg.sender, index_, now);
         }
     }
 
     function _exploreDrop(uint256[] memory winResource_) private {
-        ICommodityERC20(registry().tokenIron()).mint(_msgSender(), winResource_[0]);
-        ICommodityERC20(registry().tokenGold()).mint(_msgSender(), winResource_[1]);
-        ICommodityERC20(registry().tokenSilicate()).mint(_msgSender(), winResource_[2]);
-        ICommodityERC20(registry().tokenEnergy()).mint(_msgSender(), winResource_[3]);
+        ICommodityERC20(registry().tokenIron()).mint(msg.sender, winResource_[0]);
+        ICommodityERC20(registry().tokenGold()).mint(msg.sender, winResource_[1]);
+        ICommodityERC20(registry().tokenSilicate()).mint(msg.sender, winResource_[2]);
+        ICommodityERC20(registry().tokenEnergy()).mint(msg.sender, winResource_[3]);
     }
 
 }

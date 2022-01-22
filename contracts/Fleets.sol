@@ -2,7 +2,7 @@
 pragma experimental ABIEncoderV2;
 pragma solidity ^0.6.12;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "./utils/ArrayUtils.sol";
 import "./utils/Coordinate.sol";
 import "./utils/Distance.sol";
@@ -16,7 +16,7 @@ import "./interface/IAccount.sol";
 import "./interface/IHero.sol";
 import "./interface/ICommodityERC20.sol";
 
-contract Fleets is FleetsModel, IFleets, Ownable {
+contract Fleets is FleetsModel, IFleets, IERC721Receiver {
     using ArrayUtils for ArrayUtils;
     using Coordinate for Coordinate;
     using Distance for Distance;
@@ -141,44 +141,44 @@ contract Fleets is FleetsModel, IFleets, Ownable {
     }
 
     function _fleetFormationShip(uint256 fleetIndex_, uint32[] memory shipIdArray_) private {
-        Fleet[] memory fleetArray = userFleets(_msgSender());
+        Fleet[] memory fleetArray = userFleets(msg.sender);
         uint32[] memory nowArray = fleetArray[fleetIndex_].shipIdArray;
 
         //remove
         for (uint256 i = 0; i < nowArray.length; i++) {
             if (!ArrayUtils.contains(shipIdArray_, nowArray[i])) {
-                _fleetShipRemove(_msgSender(), fleetIndex_, nowArray[i]);
+                _fleetShipRemove(msg.sender, fleetIndex_, nowArray[i]);
             }
         }
 
         //attach
         for (uint256 i = 0; i < shipIdArray_.length; i++) {
             if (!ArrayUtils.contains(nowArray, shipIdArray_[i])) {
-                _fleetShipAttach(_msgSender(), fleetIndex_, shipIdArray_[i]);
+                _fleetShipAttach(msg.sender, fleetIndex_, shipIdArray_[i]);
             }
         }
 
     }
 
     function _fleetFormationHero(uint256 fleetIndex_, uint32[] memory heroIdArray_) private {
-        Fleet[] memory fleetArray = userFleets(_msgSender());
+        Fleet[] memory fleetArray = userFleets(msg.sender);
         uint32[] memory nowArray = fleetArray[fleetIndex_].heroIdArray;
 
         //remove
         for (uint256 i = 0; i < nowArray.length; i++) {
-            _fleetHeroRemove(_msgSender(), fleetIndex_, nowArray[i]);
+            _fleetHeroRemove(msg.sender, fleetIndex_, nowArray[i]);
         }
 
         //remove hero from other fleets
         for (uint256 i = 0; i < heroIdArray_.length; i++) {
             if (heroIdArray_[i] != 0 && getHeroPosition(heroIdArray_[i]) != 0) {
-                _fleetHeroRemove(_msgSender(), getHeroPosition(heroIdArray_[i]) - 1, heroIdArray_[i]);
+                _fleetHeroRemove(msg.sender, getHeroPosition(heroIdArray_[i]) - 1, heroIdArray_[i]);
             }
         }
 
         //attach
         for (uint256 i = 0; i < heroIdArray_.length; i++) {
-            _fleetHeroAttach(_msgSender(), fleetIndex_, heroIdArray_[i]);
+            _fleetHeroAttach(msg.sender, fleetIndex_, heroIdArray_[i]);
         }
     }
 
@@ -187,11 +187,11 @@ contract Fleets is FleetsModel, IFleets, Ownable {
         createFleet();
 
         //get fleet index
-        uint256 fleetIndex = userFleets(_msgSender()).length - 1;
+        uint256 fleetIndex = userFleets(msg.sender).length - 1;
 
         //add user
         if (fleetIndex == 0) {
-            account().addUser(_msgSender());
+            account().addUser(msg.sender);
         }
 
         //fleet formation
@@ -207,9 +207,9 @@ contract Fleets is FleetsModel, IFleets, Ownable {
         _fleetFormationHero(fleetIndex_, heroIdArray_);
 
         //event user fleets information
-        string memory coordinate = getCoordinateFromAddress(_msgSender());
-        uint256[] memory attackArray = fleetsConfig().fleetsAttackArray(_msgSender());
-        emit userFleetsInformation(_msgSender(), coordinate, attackArray);
+        string memory coordinate = getCoordinateFromAddress(msg.sender);
+        uint256[] memory attackArray = fleetsConfig().fleetsAttackArray(msg.sender);
+        emit userFleetsInformation(msg.sender, coordinate, attackArray);
     }
 
     function fleetShipInfo(address user_, uint256 index_) public view returns (IShip.Info[] memory){
@@ -244,10 +244,10 @@ contract Fleets is FleetsModel, IFleets, Ownable {
     }
 
     function createFleet() public override {
-        uint256 userFleetLength = userFleets(_msgSender()).length;
+        uint256 userFleetLength = userFleets(msg.sender).length;
         uint256 userFleetLimit = fleetsConfig().getUserFleetLimit();
         require(userFleetLimit > userFleetLength, "createFleet: exceeds user fleet limit.");
-        userFleetsMap[_msgSender()].push(_emptyFleet());
+        userFleetsMap[msg.sender].push(_emptyFleet());
     }
 
     function _emptyFleet() private pure returns (Fleet memory){
@@ -271,13 +271,13 @@ contract Fleets is FleetsModel, IFleets, Ownable {
     }
 
     function goHome(uint256 index_) public {
-        uint256 duration = fleetsConfig().getGoHomeDuration(_msgSender(), index_);
-        _changeFleetStatus(_msgSender(), index_, 0, 0, uint32(block.timestamp), uint32(block.timestamp + duration));
+        uint256 duration = fleetsConfig().getGoHomeDuration(msg.sender, index_);
+        _changeFleetStatus(msg.sender, index_, 0, 0, uint32(block.timestamp), uint32(block.timestamp + duration));
     }
 
     function goMarket(uint256 index_) public {
-        uint256 duration = fleetsConfig().getGoMarketDuration(_msgSender(), index_);
-        _changeFleetStatus(_msgSender(), index_, 2, 0, uint32(block.timestamp), uint32(block.timestamp + duration));
+        uint256 duration = fleetsConfig().getGoMarketDuration(msg.sender, index_);
+        _changeFleetStatus(msg.sender, index_, 2, 0, uint32(block.timestamp), uint32(block.timestamp + duration));
     }
 
     function goBattleByCoordinate(string memory coordinate_, uint256 fleetIndex_) public {
@@ -287,19 +287,19 @@ contract Fleets is FleetsModel, IFleets, Ownable {
         address target = account().getUserAddress(userId);
 
         //require valid address
-        require(target != _msgSender(), "goBattle: Invalid attack address.");
+        require(target != msg.sender, "goBattle: Invalid attack address.");
         require(target != address(0), "goBattle: User does not exist.");
 
-        string memory userCoordinate = Coordinate.userIdToCoordinateString(account().getUserId(_msgSender()));
+        string memory userCoordinate = Coordinate.userIdToCoordinateString(account().getUserId(msg.sender));
         uint256 second = Distance.getTransportTime(userCoordinate, coordinate_);
-        _changeFleetStatus(_msgSender(), fleetIndex_, 3, userId, block.timestamp, block.timestamp + second);
+        _changeFleetStatus(msg.sender, fleetIndex_, 3, userId, block.timestamp, block.timestamp + second);
     }
 
     function quickFly(uint256 index_) public {
         (address tokenAddress,uint256 cost) = fleetsConfig().getQuickFlyCost();
-        ICommodityERC20(tokenAddress).operatorTransfer(_msgSender(), address(this), cost);
+        ICommodityERC20(tokenAddress).operatorTransfer(msg.sender, address(this), cost);
         ICommodityERC20(tokenAddress).burn(cost);
-        Fleet storage fleet = userFleetsMap[_msgSender()][index_];
+        Fleet storage fleet = userFleetsMap[msg.sender][index_];
         fleet.missionEndTime = fleet.missionStartTime;
     }
 
@@ -319,17 +319,17 @@ contract Fleets is FleetsModel, IFleets, Ownable {
     }
 
     function guardHome(uint256 fleetIndex_) external {
-        require(_checkFleetStatus(_msgSender(), fleetIndex_, 0), "guardHome: The fleet is on a mission.");
-        _changeFleetStatus(_msgSender(), fleetIndex_, 1, 0, block.timestamp, block.timestamp);
+        require(_checkFleetStatus(msg.sender, fleetIndex_, 0), "guardHome: The fleet is on a mission.");
+        _changeFleetStatus(msg.sender, fleetIndex_, 1, 0, block.timestamp, block.timestamp);
     }
 
     function cancelGuardHome(uint256 fleetIndex_) external {
-        require(_checkFleetStatus(_msgSender(), fleetIndex_, 1), "cancelGuardHome: The fleet is not guarding.");
-        _changeFleetStatus(_msgSender(), fleetIndex_, 0, 0, block.timestamp, block.timestamp);
+        require(_checkFleetStatus(msg.sender, fleetIndex_, 1), "cancelGuardHome: The fleet is not guarding.");
+        _changeFleetStatus(msg.sender, fleetIndex_, 0, 0, block.timestamp, block.timestamp);
     }
 
     function getHeroPosition(uint256 heroId_) public view returns (uint256){
-        Fleet[] memory fleets = userFleets(_msgSender());
+        Fleet[] memory fleets = userFleets(msg.sender);
         for (uint256 i = 0; i < fleets.length; i++) {
             for (uint256 j = 0; j < fleets[i].heroIdArray.length; j++) {
                 if (fleets[i].heroIdArray[j] == heroId_) {
@@ -341,7 +341,7 @@ contract Fleets is FleetsModel, IFleets, Ownable {
     }
 
     function getFleetsHeroArray() external view returns (uint256[] memory){
-        Fleet[] memory fleets = userFleets(_msgSender());
+        Fleet[] memory fleets = userFleets(msg.sender);
         uint256[] memory heroArray = new uint256[](fleets.length * 4);
         uint256 index = 0;
         for (uint i = 0; i < fleets.length; i++) {
@@ -351,5 +351,9 @@ contract Fleets is FleetsModel, IFleets, Ownable {
             }
         }
         return heroArray;
+    }
+
+    function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
+        return this.onERC721Received.selector;
     }
 }
