@@ -353,6 +353,15 @@ contract Fleets is FleetsModel, IFleets, IERC721Receiver {
         return heroArray;
     }
 
+    function getIdleShipsAndFleets() external view returns (uint256[] memory, Fleet[] memory){
+        uint256[] memory idleShips = new uint256[](ship().balanceOf(msg.sender));
+        for (uint i = 0; i < idleShips.length; i++) {
+            uint256 shipId = ship().tokenOfOwnerByIndex(msg.sender, i);
+            idleShips[i] = shipId;
+        }
+        return (idleShips, userFleets(msg.sender));
+    }
+
     function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
         return this.onERC721Received.selector;
     }
