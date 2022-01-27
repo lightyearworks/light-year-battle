@@ -65,7 +65,7 @@ contract Battle is IBattle {
         IFleets.Fleet memory defenderFleet = fleets().getGuardFleet(targetAddress);
 
         //battle
-        bytes memory battleBytes = battleByFleet(attackerFleet, defenderFleet);
+        bytes memory battleBytes = battleByFleet(msg.sender, targetAddress, attackerFleet, defenderFleet);
         account().saveBattleHistory(msg.sender, battleBytes);
 
         //handle battle result
@@ -78,11 +78,11 @@ contract Battle is IBattle {
     /**
      * battle by fleet 
      */
-    function battleByFleet(IFleets.Fleet memory attacker, IFleets.Fleet memory defender) public view returns (bytes memory){
+    function battleByFleet(address attacker_, address defender_, IFleets.Fleet memory attackerFleet_, IFleets.Fleet memory defenderFleet_) public view returns (bytes memory){
 
         //ship length
-        uint256 attackerLen = attacker.shipIdArray.length;
-        uint256 defenderLen = defender.shipIdArray.length;
+        uint256 attackerLen = attackerFleet_.shipIdArray.length;
+        uint256 defenderLen = defenderFleet_.shipIdArray.length;
 
         //check length
         require(attackerLen > 0, "_battle: Attacker has no ship.");
@@ -90,21 +90,18 @@ contract Battle is IBattle {
         //attacker ships
         IShip.Info[] memory attackerShips = new IShip.Info[](attackerLen);
         for (uint i = 0; i < attackerLen; i++) {
-            attackerShips[i] = ship().shipInfo(attacker.shipIdArray[i]);
+            attackerShips[i] = ship().shipInfo(attackerFleet_.shipIdArray[i]);
         }
 
         //defender ships
         IShip.Info[] memory defenderShips = new IShip.Info[](defenderLen);
         for (uint i = 0; i < defenderLen; i++) {
-            defenderShips[i] = ship().shipInfo(defender.shipIdArray[i]);
+            defenderShips[i] = ship().shipInfo(defenderFleet_.shipIdArray[i]);
         }
 
-        return battleByShipInfo(attackerShips, defenderShips);
-    }
-
-    function battleByShipInfo(IShip.Info[] memory attackerShips_, IShip.Info[] memory defenderShips_) public override view returns (bytes memory){
-        BattleShip[] memory attacker = toBattleShipArray(attackerShips_);
-        BattleShip[] memory defender = toBattleShipArray(defenderShips_);
+        //to battle ship array
+        BattleShip[] memory attacker = toBattleShipArray(attacker_, attackerShips);
+        BattleShip[] memory defender = toBattleShipArray(defender_, defenderShips);
         return battleByBattleShip(attacker, defender);
     }
 
@@ -242,10 +239,10 @@ contract Battle is IBattle {
         return (_battleInfoToBytes(info), defender_);
     }
 
-    function toBattleShipArray(IShip.Info[] memory array) public override view returns (BattleShip[] memory){
+    function toBattleShipArray(address user_, IShip.Info[] memory array) public override view returns (BattleShip[] memory){
         BattleShip[] memory ships = new BattleShip[](array.length);
         for (uint i = 0; i < ships.length; i++) {
-            uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(array[i]);
+            uint256[] memory attrs = shipAttrConfig().getAttributesByInfo(user_, array[i]);
             uint8 shipType = uint8(attrs[2]);
             uint32 health = uint32(attrs[4]);
             uint32 attack = uint32(attrs[5]);

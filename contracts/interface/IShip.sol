@@ -10,6 +10,7 @@ interface IShip {
         uint8 shipType;
     }
 
+    function ownerOf(uint256 tokenId) external view returns (address);
     function balanceOf(address owner) external view returns (uint256 balance);
     function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256 tokenId);
     function safeTransferFrom(address from, address to, uint256 tokenId) external;

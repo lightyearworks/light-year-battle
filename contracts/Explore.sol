@@ -79,7 +79,7 @@ contract Explore {
         }
 
         //to battle ships
-        IBattle.BattleShip[] memory attacker = battle().toBattleShipArray(attackerShips);
+        IBattle.BattleShip[] memory attacker = battle().toBattleShipArray(msg.sender, attackerShips);
 
         //get pirate ships
         IBattle.BattleShip[] memory defender = exploreConfig().pirateBattleShips(level_);

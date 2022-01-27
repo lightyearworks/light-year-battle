@@ -21,4 +21,5 @@ interface IFleets {
     function userFleets(address) external view returns (Fleet[] memory);
     function getGuardFleet(address addr_) external view returns (Fleet memory);
     function createFleet() external;
+    function shipOwnerOf(uint256) external view returns(address);
 }

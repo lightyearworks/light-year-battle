@@ -48,6 +48,10 @@ contract Fleets is FleetsModel, IFleets, IERC721Receiver {
         return IHero(registry().hero());
     }
 
+    function shipOwnerOf(uint256 shipId_) external view override returns (address){
+        return shipOwnerMap[shipId_];
+    }
+
     function userFleet(address addr_, uint256 index_) public view override returns (Fleet memory){
         Fleet[] memory fleetArray = userFleetsMap[addr_];
         require(index_ < fleetArray.length, "userFleet: The index is out of bounds.");

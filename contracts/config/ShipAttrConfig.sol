@@ -4,6 +4,8 @@ pragma solidity ^0.6.12;
 
 import "../interface/IShipAttrConfig.sol";
 import "../interface/IRegistry.sol";
+import "../interface/IUpgradeable.sol";
+import "../interface/IFleets.sol";
 
 contract ShipAttrConfig is IShipAttrConfig {
 
@@ -21,12 +23,29 @@ contract ShipAttrConfig is IShipAttrConfig {
         return IShip(registry().ship());
     }
 
-    function getAttributesById(uint256 shipId_) public view override returns (uint256[] memory){
-        IShip.Info memory info = ship().shipInfo(shipId_);
-        return getAttributesByInfo(info);
+    function fleets() private view returns (IFleets){
+        return IFleets(registry().fleets());
     }
 
-    function getAttributesByInfo(IShip.Info memory info_) public view override returns (uint256[] memory){
+    function research() public view returns (IUpgradeable) {
+        return IUpgradeable(registry().research());
+    }
+
+    function ownerOf(uint256 shipId_) public view returns (address){
+        address owner = ship().ownerOf(shipId_);
+        if (owner == registry().fleets()) {
+            return fleets().shipOwnerOf(shipId_);
+        }
+        return owner;
+    }
+
+    function getAttributesById(uint256 shipId_) public view override returns (uint256[] memory){
+        IShip.Info memory info = ship().shipInfo(shipId_);
+        address user = ownerOf(shipId_);
+        return getAttributesByInfo(user, info);
+    }
+
+    function getAttributesByInfo(address user_, IShip.Info memory info_) public view override returns (uint256[] memory){
         uint16 level = info_.level;
         uint8 quality = info_.quality;
         uint8 shipType = info_.shipType;
@@ -35,6 +54,12 @@ contract ShipAttrConfig is IShipAttrConfig {
         uint256 health = getAttack(level, quality, shipType) * 2;
         uint256 attack = getAttack(level, quality, shipType);
         uint256 defense = getAttack(level, quality, shipType);
+
+        if (user_ != 0x0000000000000000000000000000000000000000) {
+            health *= (100 + research().levelMap(user_, 3) * 5) / 100;
+            attack *= (100 + research().levelMap(user_, 3) * 5) / 100;
+            defense *= (100 + research().levelMap(user_, 3) * 5) / 100;
+        }
 
         uint256[] memory attrs = new uint256[](7);
         attrs[0] = level;
