@@ -55,9 +55,9 @@ contract ExploreConfig is IExploreConfig {
 
     function pirateBattleShips(uint256 level_) public override pure returns (IBattle.BattleShip[] memory){
         IBattle.BattleShip[] memory ships = new IBattle.BattleShip[](4);
-        uint32 health = 30 * uint32(level_ + 1);
-        uint32 attack = 30 * uint32(level_ + 1);
-        uint32 defense = 30 * uint32(level_ + 1);
+        uint32 health = 100 * uint32(2 ** level_);
+        uint32 attack = 100 * uint32(2 ** level_);
+        uint32 defense = 100 * uint32(2 ** level_);
         IBattle.BattleShip memory info = IBattle.BattleShip(health, attack, defense, 6);
         ships[0] = info;
         ships[1] = info;
