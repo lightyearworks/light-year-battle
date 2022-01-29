@@ -175,9 +175,16 @@ contract Fleets is FleetsModel, IFleets, IERC721Receiver {
 
         //remove hero from other fleets
         for (uint256 i = 0; i < heroIdArray_.length; i++) {
-            if (heroIdArray_[i] != 0 && getHeroPosition(heroIdArray_[i]) != 0) {
-                _fleetHeroRemove(msg.sender, getHeroPosition(heroIdArray_[i]) - 1, heroIdArray_[i]);
+            if (heroIdArray_[i] == 0) {
+                continue;
             }
+
+            uint256 heroPosition = getHeroPosition(heroIdArray_[i]);
+            if (heroPosition == 0) {
+                continue;
+            }
+
+            _fleetHeroRemove(msg.sender, heroPosition - 1, heroIdArray_[i]);
         }
 
         //attach
